@@ -1,0 +1,39 @@
+﻿<AuthorizeView>
+    <Authorized>
+        <div class="app-container">
+            <div class=" row">
+                <div class="col-md-6">
+                    <h4 class="left-align">Blazor App</h4>
+                </div>
+                <div class="col-md-6">
+                    <div class="col-md-4">
+                        
+                    </div>
+                    <div class="float-right row">
+                        <a href="questionnaire" style="padding-top:18px;">Questionnaire</a>
+                        
+                        <form method="post" action="Identity/Account/LogOut" class="right-align">
+                            <button type="submit" class="nav-link btn btn-link font-override">Log Out</button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+
+    <NotAuthorized>
+        <div class="app-container">
+            <div class=" row">
+                <div class="col-md-6">
+                    <h4 class="left-align">Blazor App</h4>
+                </div>
+                <div class="col-md-6">
+                    <div class="right-align">
+                        <a href="Identity/Account/Login">Log In</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>

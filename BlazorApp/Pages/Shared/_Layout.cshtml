@@ -1,0 +1,129 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Mvc.ViewEngines
+@inject IWebHostEnvironment Environment
+@inject ICompositeViewEngine Engine
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BlazorApp</title>
+    <link rel="stylesheet" href="~/Identity/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/Identity/css/site.css" />
+</head>
+<body>
+
+    <div class="parent-container">
+        <div class="top-container">
+            <h4>Blazor App</h4>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <main role="main" class="pb-3">           
+            @RenderBody()
+        </main>
+    </div>
+    <footer class="footer border-top text-muted">
+        <div class="container">
+            &copy; 2022 - BlazorApp - <a asp-area="" asp-page="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/Identity/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Identity/js/site.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
+
+
+<style>
+
+    .app-textbox {
+        background-color: #eee !important;
+        width: 50%;
+        border-width: 0;
+        border-radius: 0;
+        color: #999;
+        font-size: 14px;
+        padding: 16px;
+    }
+
+    html, body {
+        font-family: 'Open Sans', Arial, sans-serif;
+        font-size: 24px;
+        line-height: 2.5em;
+        color: #282d48;
+    }
+
+
+    .btn-app {
+        color: #fff;
+        background-color: #f0908a;
+        border-width: 0px !important;
+        border-radius: 8px;
+        min-width: 120px;
+    }
+
+        .btn-app:hover:not([disabled]) {
+            color: #fff;
+            background-color: #282D48;
+            border-color: #1861ac;
+            transition: all 500ms ease 0ms;
+        }
+
+
+
+    .app-container .navbar-brand {
+        justify-content: flex-end;
+        background-color: #fff;
+        
+        line-height: 23px;
+        font-weight: 500;
+        height: 100px;
+        font-size: 22px;
+    }
+
+    .border-bottom {
+        border-bottom: 1px solid #E5E5E5 !important; 
+    }
+
+    h1 {
+        line-height: 1em;
+        font-weight: 400;
+        font-size: 60px;
+        color: #282d48;
+        margin-bottom: 4.758%;
+    }
+
+    .top-heading {
+        justify-content: flex-end;
+        background-color: #fff;
+        line-height: 23px;
+        font-weight: 500;
+        height: 150px;
+        font-size: 22px;
+        margin-left: 10%;
+    }
+
+    .parent-container {
+        justify-content: flex-end;
+        background-color: #fff;
+        border-bottom: 1px solid #E5E5E5;
+        line-height: 23px;
+        font-weight: 500;
+        font-size: 22px;
+
+    }
+
+    .top-container {
+        width: 80%;
+        margin: auto;
+        margin-top: 75px;
+        max-width: 1080px;
+        min-height:75px; 
+        /*    position:relative;*/
+    }
+
+</style>

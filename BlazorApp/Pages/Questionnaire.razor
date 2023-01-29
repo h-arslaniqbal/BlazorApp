@@ -1,0 +1,179 @@
+﻿@page "/questionnaire"
+@attribute [Authorize]
+@inject QuestionnaireService _questionnaireService
+
+<div class="app-container">
+    <h1>Patient Questionnaire</h1>
+
+    @if (questionList == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <EditForm Model="@questionList" OnValidSubmit="OnSubmitQuestionnaire">
+
+            <div class="question-container">
+
+                @foreach (QuestionModel question in questionList)
+                {
+                    <div hidden="@(!question.IsActive)">
+                        <p>@question.Question</p>
+                        @if (question.QuestionType == AppConstants.QuestionType.SingleCheckBox)
+                        {
+                            @foreach (var option in question.Options)
+                            {
+                                <input type="checkbox" @bind="question.AnswerText" /> @option.Key
+                            }
+                        }
+                        else if (question.QuestionType == AppConstants.QuestionType.DropDown)
+                        {
+                            <label>
+                                <InputSelect @bind-Value="question.AnswerText">
+                                    <option value="">Please select from the options</option>
+                                    @foreach (var option in question.Options)
+                                                {
+                                        <option value="@option">@option</option>
+                                                }
+                                </InputSelect>
+                            </label>
+                        }
+                        else if (question.QuestionType == AppConstants.QuestionType.RadioButton)
+                        {
+
+                            foreach (var option in question.Options)
+                            {
+
+                                <label class="radio-container">
+                                    @option.Key
+                                    <input type="radio" name="radio" value="@option.Key"
+                                           checked
+                                           @onchange="@(() =>
+                                                {
+                                                    question.AnswerText = option.Key;
+                                                    question.AnswerScore = option.Value;
+                                                    question.IsAnswered = true;
+                                                })" />
+                                    <span class="checkmark"></span>
+                                </label>
+
+                            }
+                        }
+                        else
+                        {
+                            <InputText class="app-textbox" @bind-Value="question.AnswerText" />
+                        }
+                    </div>
+                }
+
+                <div hidden="@HideDisclaimerMsg">
+                    <p>
+                        You cannot proceed without accepting the disclaimer.
+                    </p>
+                </div>
+
+                <div hidden="@(!(nextQuestionId == -1 && HideDisclaimerMsg))">
+                    <p>
+                        Thank you for taking time to fill questionnaire. Your response has been recorded.
+                    </p>
+                </div>
+
+                <button class="btn-app btn-next" disabled="@(string.IsNullOrWhiteSpace(activeQuestion.AnswerText))" @onclick="OnNextQuestion" hidden="@(nextQuestionId == -1)"> Next </button>
+            </div>
+        </EditForm>
+    }
+
+</div>
+
+@code {
+    private List<QuestionModel> questionList;
+    private int nextQuestionId = 0;
+    private int previousQuestionId = 0;
+    private List<Tuple<int, bool>> processedQuestions = new List<Tuple<int, bool>>();
+    private bool HideDisclaimerMsg = true;
+
+    QuestionModel activeQuestion = new QuestionModel();
+    private void OnSubmitQuestionnaire()
+    {
+
+    }
+
+    private void OnNextQuestion()
+    {
+        activeQuestion = questionList.Where(x => x.IsActive).FirstOrDefault();
+        activeQuestion.IsAnswered = true;
+
+        if (activeQuestion.Id == 1) // this check is for disclaimer question. in future we can use different object for disclaimer before loading the question. for simplicity, using this method.
+        {
+            if (activeQuestion.AnswerScore == 0)
+            {
+                HideDisclaimerMsg = false;
+                activeQuestion.IsActive = false;
+                nextQuestionId = -1;
+                return;
+            }
+        }
+
+        nextQuestionId = GetNextQuestion(activeQuestion);
+        previousQuestionId = activeQuestion.Id;
+        activeQuestion.IsActive = false;
+        if (nextQuestionId > 0)
+        {
+            questionList.FirstOrDefault(x => x.Id == nextQuestionId).IsActive = true;
+            activeQuestion = questionList.Where(x => x.IsActive).FirstOrDefault();
+        }
+        else
+        {
+            activeQuestion = new QuestionModel();
+        }
+    }
+
+    private int GetNextQuestion(QuestionModel oldQuestion)
+    {
+        int questionId = -1;
+        if (oldQuestion.IsAnswered)
+        {
+            SetupQuestionValidity(oldQuestion);
+            var nextQuestion = questionList.FirstOrDefault(x => x.DisplayOrder > oldQuestion.DisplayOrder && x.IsValid && !x.IsAnswered);
+            if (nextQuestion != null)
+            {
+                questionId = nextQuestion.Id;
+            }
+        }
+        return questionId;
+    }
+
+    private void SetupQuestionValidity(QuestionModel oldQuestion)
+    {
+        var questionsToValidate = questionList.Where(x => x.PreQuestionIds.Contains(oldQuestion.Id)).ToList();
+        foreach (var q in questionsToValidate)
+        {
+            List<int> dependentQuestions = q.PreQuestionIds;
+            var inValidPreQuestion = questionList
+                    .Where(x => dependentQuestions.Contains(x.Id) && (!x.IsAnswered || x.AnswerScore == 0))
+                    .FirstOrDefault();
+            if (inValidPreQuestion == null)
+            {
+                q.IsValid = true;
+            }
+        }
+    }
+
+    private void OnPreviousQuestion(QuestionModel question)
+    {
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        questionList = await _questionnaireService.GetQuestionsList();
+        nextQuestionId = questionList.Count > 1 ? questionList[1].Id : 0;
+
+        // all questions that do not have pre-req are valid
+        foreach (var q in questionList.Where(x => x.PreQuestionIds.Count == 0))
+        {
+            q.IsValid = true;
+        }
+        activeQuestion = questionList.Where(x => x.IsActive).FirstOrDefault();
+    }
+}
